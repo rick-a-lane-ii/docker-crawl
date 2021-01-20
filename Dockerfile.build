@@ -1,0 +1,17 @@
+# Builder image
+FROM gcr.io/nebula-tasks/crawl-base
+
+# Variables
+ENV CRAWL_REPO="https://github.com/crawl/crawl.git"
+
+# Retrieve crawl
+RUN git clone ${CRAWL_REPO} /src/
+
+# Build crawl
+RUN cd /src/crawl-ref/source && \
+  make install -j4 DESTDIR=/app/ USE_DGAMELAUNCH=y WEBTILES=y
+
+# Set up webserver components
+RUN cp -r /src/crawl-ref/source/webserver /app/ && \
+  cp -r /src/crawl-ref/source/util /app/
+

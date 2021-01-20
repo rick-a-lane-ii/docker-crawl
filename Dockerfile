@@ -1,34 +1,5 @@
 # Builder image
-FROM ubuntu:20.04 AS builder
-
-# Variables
-ENV CRAWL_REPO="https://github.com/crawl/crawl.git" \
-  APP_DEPS="bzip2 liblua5.1-0-dev python3-minimal python3-pip python3-yaml \
-    python-is-python3 ncurses-term locales-all sqlite3 libpcre3 locales \
-    lsof sudo libbot-basicbot-perl" \
-  BUILD_DEPS="autoconf bison build-essential flex git libncursesw5-dev \
-    libsqlite3-dev libz-dev pkg-config binutils-gold libsdl2-image-dev libsdl2-mixer-dev \
-    libsdl2-dev libfreetype6-dev libpng-dev ttf-dejavu-core advancecomp pngcrush" \
-  DEBIAN_FRONTEND=noninteractive
-
-# Install packages for the build
-RUN apt-get update && \
-  apt-get upgrade -y && \
-  apt-get install -y musl-dev && \
-  ln -s /usr/lib/x86_64-linux-musl/libc.so /lib/libc.musl-x86_64.so.1 && \
-  apt-get install -y ${BUILD_DEPS} ${APP_DEPS} \
-    --option=Dpkg::Options::=--force-confdef
-
-# Retrieve crawl
-RUN git clone ${CRAWL_REPO} /src/
-
-# Build crawl
-RUN cd /src/crawl-ref/source && \
-  make install -j4 DESTDIR=/app/ USE_DGAMELAUNCH=y WEBTILES=y
-
-# Set up webserver components
-RUN cp -r /src/crawl-ref/source/webserver /app/ && \
-  cp -r /src/crawl-ref/source/util /app/
+FROM gcr.io/nebula-tasks/crawl-build as builder
 
 # Runtime image
 FROM ubuntu:20.04
